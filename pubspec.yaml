@@ -38,6 +38,7 @@ dependencies:
   intl: ^0.18.0
   path: ^1.8.2
   confetti: ^0.7.0
+  google_mobile_ads: ^3.0.0
 
 dev_dependencies:
 

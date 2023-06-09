@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:hangman/dbhelper.dart';
 import 'package:hangman/scorePage.dart';
 import 'package:hangman/storagemodel.dart';
@@ -33,8 +34,9 @@ class _gamePageState extends State<gamePage> {
 
   @override
   void initState() {
-    generatewords();
     super.initState();
+    generatewords();
+    initBannerAd();
   }
 
   void generatewords() {
@@ -47,6 +49,30 @@ class _gamePageState extends State<gamePage> {
     });
   }
 
+  late BannerAd bannerAd;
+  bool isAdLoaded = false;
+
+  initBannerAd() {
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          print(error);
+        },
+      ),
+      request: const AdRequest(),
+    );
+
+    bannerAd.load();
+  }
+
   @override
   Widget build(BuildContext context) {
     word.split('').forEach((element) => uniqueChars.add(element));
@@ -54,26 +80,26 @@ class _gamePageState extends State<gamePage> {
     return WillPopScope(
       onWillPop: () async {
         final ans = await Get.defaultDialog(
-          titlePadding: EdgeInsets.fromLTRB(10, 20, 10, 5),
-          contentPadding: EdgeInsets.all(20),
+          titlePadding: const EdgeInsets.fromLTRB(10, 20, 10, 5),
+          contentPadding: const EdgeInsets.all(20),
           backgroundColor: Colors.brown[400],
           title: "ENDGAME",
-          content: Text("Are you sure to END GAME?"),
+          content: const Text("Are you sure to END GAME?"),
           radius: 30,
           actions: [
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                minimumSize: Size(10, 30),
+                minimumSize: const Size(10, 30),
                 foregroundColor: Colors.brown[900],
-                side: BorderSide(color: Colors.brown),
+                side: const BorderSide(color: Colors.brown),
               ),
               onPressed: () {
                 Get.back(result: false);
               },
-              icon: Icon(
+              icon: const Icon(
                 Icons.close,
               ),
-              label: Text("No"),
+              label: const Text("No"),
             ),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
@@ -83,8 +109,8 @@ class _gamePageState extends State<gamePage> {
               onPressed: () {
                 Get.back(result: true);
               },
-              icon: Text("END"),
-              label: Icon(
+              icon: const Text("END"),
+              label: const Icon(
                 Icons.exit_to_app,
               ),
             ),
@@ -107,6 +133,15 @@ class _gamePageState extends State<gamePage> {
         }
       },
       child: Scaffold(
+        bottomNavigationBar: isAdLoaded
+            ? SizedBox(
+                height: bannerAd.size.height.toDouble(),
+                width: bannerAd.size.width.toDouble(),
+                child: AdWidget(
+                  ad: bannerAd,
+                ),
+              )
+            : const SizedBox(),
         body: SafeArea(
           child: Column(
             children: [
@@ -117,7 +152,7 @@ class _gamePageState extends State<gamePage> {
                   children: [
                     NoOfLives(selectedChar: selectedChar, lives: lives),
                     Container(
-                      margin: EdgeInsets.all(3),
+                      margin: const EdgeInsets.all(3),
                       child: Text(
                         wordCount.toString(),
                         style: const TextStyle(
@@ -182,7 +217,7 @@ class _gamePageState extends State<gamePage> {
                     ),
                     Expanded(
                       child: Container(
-                        padding: EdgeInsets.all(15),
+                        padding: const EdgeInsets.all(15),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: word
@@ -198,7 +233,7 @@ class _gamePageState extends State<gamePage> {
               ),
               Expanded(
                 child: Container(
-                  padding: EdgeInsets.all(15),
+                  padding: const EdgeInsets.all(15),
                   child: GridView.count(
                     crossAxisCount: 8,
                     mainAxisSpacing: 10,
@@ -252,10 +287,11 @@ class _gamePageState extends State<gamePage> {
                               Get.defaultDialog(
                                 barrierDismissible: false,
                                 title: "THE MAN IS HANGED",
-                                content: Text("Are you sure to use life?"),
+                                content:
+                                    const Text("Are you sure to use life?"),
                                 titlePadding:
-                                    EdgeInsets.fromLTRB(10, 20, 10, 10),
-                                contentPadding: EdgeInsets.all(20),
+                                    const EdgeInsets.fromLTRB(10, 20, 10, 10),
+                                contentPadding: const EdgeInsets.all(20),
                                 backgroundColor: Colors.brown[400],
                                 radius: 20,
                                 actions: [
@@ -276,9 +312,10 @@ class _gamePageState extends State<gamePage> {
                                         await dbHelper.instance.create(score);
                                       },
                                       style: OutlinedButton.styleFrom(
-                                        minimumSize: Size(20, 30),
+                                        minimumSize: const Size(20, 30),
                                         foregroundColor: Colors.brown[900],
-                                        side: BorderSide(color: Colors.brown),
+                                        side: const BorderSide(
+                                            color: Colors.brown),
                                       ),
                                       child: const Text(
                                         "Cancel",
@@ -299,13 +336,13 @@ class _gamePageState extends State<gamePage> {
                                           Get.back();
                                         });
                                       },
-                                      child: Text(
+                                      child: const Text(
                                         "Yes",
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
                                       ),
                                       style: ElevatedButton.styleFrom(
-                                        minimumSize: Size(35, 30),
+                                        minimumSize: const Size(35, 30),
                                         backgroundColor: Colors.brown,
                                         foregroundColor: Colors.brown[900],
                                       ),
