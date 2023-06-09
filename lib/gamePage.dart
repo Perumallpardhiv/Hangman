@@ -1,12 +1,13 @@
 import 'dart:math';
+import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:hangman/dbhelper.dart';
 import 'package:hangman/scorePage.dart';
 import 'package:hangman/storagemodel.dart';
+import 'package:hangman/widgets/hintButton.dart';
+import 'package:hangman/widgets/noOfLives.dart';
 import 'package:hangman/wordDisplay.dart';
-import 'package:random_words/random_words.dart';
 
 class gamePage extends StatefulWidget {
   const gamePage({super.key});
@@ -37,8 +38,8 @@ class _gamePageState extends State<gamePage> {
   }
 
   void generatewords() {
-    generateAdjective()
-        .take(1000)
+    adjectives
+        .take(50)
         .where((element) =>
             element.toString().length <= 7 && element.toString().length >= 3)
         .forEach((element) {
@@ -114,171 +115,60 @@ class _gamePageState extends State<gamePage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Stack(
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(top: 0.5),
-                          child: IconButton(
-                            tooltip: 'Lives',
-                            splashColor: Colors.brown,
-                            iconSize: 30,
-                            icon: Icon(Icons.favorite),
-                            onPressed: () {
-                              print(selectedChar.length);
-                            },
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(6, 6, 5, 0),
-                          child: SizedBox(
-                            height: 38,
-                            width: 38,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: Text(
-                                  lives.toString(),
-                                  style: const TextStyle(
-                                    color: Colors.brown,
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    fontFamily: 'Monoton',
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    NoOfLives(selectedChar: selectedChar, lives: lives),
                     Container(
                       margin: EdgeInsets.all(3),
                       child: Text(
                         wordCount.toString(),
                         style: const TextStyle(
-                            fontSize: 17,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: "PressStart2P"),
+                          fontSize: 17,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          fontFamily: "PressStart2P",
+                        ),
                       ),
                     ),
-                    Stack(
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.only(top: 0.5),
-                          child: IconButton(
-                            tooltip: 'Hint',
-                            iconSize: 30,
-                            icon: Icon(Icons.lightbulb),
-                            onPressed: hintStatus
-                                ? () {
-                                    int rad = Random().nextInt(allChars.length);
-                                    var hintChar = allChars[rad];
-                                    while (selectedChar.contains(hintChar)) {
-                                      rad = Random().nextInt(allChars.length);
-                                      hintChar = allChars[rad];
-                                    }
-                                    setState(() {
-                                      selectedChar.add(hintChar.toUpperCase());
-                                      hintStatus = false;
-                                      findChar++;
-                                      allChars.remove(hintChar.toUpperCase());
-                                      if (findChar == uniqueChars.length) {
-                                        wordCount = wordCount + word.length;
-                                        word = wordsList[_random
-                                                .nextInt(wordsList.length)]
-                                            .toString()
-                                            .toUpperCase();
-                                        print(word);
-                                        uniqueChars = Set<String>();
-                                        word.split('').forEach((element) =>
-                                            uniqueChars.add(element));
-                                        // word = "GREEK".toString().toUpperCase();
-                                        allChars = <String>[];
-                                        word.split('').forEach((element) =>
-                                            allChars
-                                                .add(element.toUpperCase()));
-                                        selectedChar = [''];
-                                        findChar = 0;
-                                        hintStatus = true;
-                                      }
-                                    });
-                                  }
-                                : null,
-                          ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.fromLTRB(6, 4, 5, 0),
-                          child: SizedBox(
-                            height: 38,
-                            width: 38,
-                            child: Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(2.0),
-                                child: TextButton(
-                                  onPressed: hintStatus
-                                      ? () {
-                                          int rad =
-                                              Random().nextInt(allChars.length);
-                                          var hintChar = allChars[rad];
-                                          while (
-                                              selectedChar.contains(hintChar)) {
-                                            rad = Random()
-                                                .nextInt(allChars.length);
-                                            hintChar = allChars[rad];
-                                          }
-                                          setState(() {
-                                            selectedChar
-                                                .add(hintChar.toUpperCase());
-                                            hintStatus = false;
-                                            findChar++;
-                                            allChars
-                                                .remove(hintChar.toUpperCase());
-                                            if (findChar ==
-                                                uniqueChars.length) {
-                                              wordCount =
-                                                  wordCount + word.length;
-                                              word = wordsList[_random.nextInt(
-                                                      wordsList.length)]
-                                                  .toString()
-                                                  .toUpperCase();
-                                              print(word);
-                                              uniqueChars = Set<String>();
-                                              word.split('').forEach(
-                                                  (element) =>
-                                                      uniqueChars.add(element));
-                                              // word = "GREEK".toString().toUpperCase();
-                                              allChars = <String>[];
-                                              word.split('').forEach(
-                                                  (element) => allChars.add(
-                                                      element.toUpperCase()));
-                                              selectedChar = [''];
-                                              findChar = 0;
-                                              hintStatus = true;
-                                            }
-                                          });
-                                        }
-                                      : null,
-                                  child: Text(
-                                    hintStatus ? "1" : "0",
-                                    style: const TextStyle(
-                                      color: Colors.brown,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      fontFamily: 'Monoton',
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        )
-                      ],
+                    GestureDetector(
+                      onTap: hintStatus
+                          ? () {
+                              int rad = Random().nextInt(allChars.length);
+                              var hintChar = allChars[rad];
+                              while (selectedChar.contains(hintChar)) {
+                                rad = Random().nextInt(allChars.length);
+                                hintChar = allChars[rad];
+                              }
+                              setState(() {
+                                selectedChar.add(hintChar.toUpperCase());
+                                hintStatus = false;
+                                findChar++;
+                                allChars.remove(hintChar.toUpperCase());
+                                if (findChar == uniqueChars.length) {
+                                  wordCount = wordCount + word.length;
+                                  word = wordsList[
+                                          _random.nextInt(wordsList.length)]
+                                      .toString()
+                                      .toUpperCase();
+                                  print(word);
+                                  uniqueChars = Set<String>();
+                                  word.split('').forEach(
+                                      (element) => uniqueChars.add(element));
+                                  // word = "GREEK".toString().toUpperCase();
+                                  allChars = <String>[];
+                                  word.split('').forEach((element) =>
+                                      allChars.add(element.toUpperCase()));
+                                  selectedChar = [''];
+                                  findChar = 0;
+                                  hintStatus = true;
+                                }
+                              });
+                            }
+                          : null,
+                      child: HintButton(hintStatus: hintStatus),
                     ),
                   ],
                 ),
               ),
-              Container(
+              SizedBox(
                 height: height * 0.54,
                 child: Column(
                   children: [
@@ -385,15 +275,16 @@ class _gamePageState extends State<gamePage> {
                                         );
                                         await dbHelper.instance.create(score);
                                       },
-                                      child: Text(
-                                        "Cancel",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
                                       style: OutlinedButton.styleFrom(
                                         minimumSize: Size(20, 30),
                                         foregroundColor: Colors.brown[900],
                                         side: BorderSide(color: Colors.brown),
+                                      ),
+                                      child: const Text(
+                                        "Cancel",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ),
                                   ),

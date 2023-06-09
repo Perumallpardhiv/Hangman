@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:hangman/gamePage.dart';
 import 'package:hangman/highScorePage.dart';
 import 'package:hangman/homePage.dart';
-import 'package:hangman/scorePage.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
