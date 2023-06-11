@@ -52,10 +52,10 @@ class _gamePageState extends State<gamePage> {
   late BannerAd bannerAd;
   bool isAdLoaded = false;
 
-  initBannerAd() {
+  initBannerAd() async {
     bannerAd = BannerAd(
       size: AdSize.banner,
-      adUnitId: 'ca-app-pub-3940256099942544/6300978111',
+      adUnitId: 'ca-app-pub-2108900822347101/7505952631',
       listener: BannerAdListener(
         onAdLoaded: (ad) {
           setState(() {
@@ -70,7 +70,7 @@ class _gamePageState extends State<gamePage> {
       request: const AdRequest(),
     );
 
-    bannerAd.load();
+    await bannerAd.load();
   }
 
   @override
@@ -209,7 +209,7 @@ class _gamePageState extends State<gamePage> {
                   children: [
                     Expanded(
                       flex: 3,
-                      child: Container(
+                      child: SizedBox(
                         height: 200,
                         width: 200,
                         child: Image.asset("assets/$tries.png"),
