@@ -37,6 +37,7 @@ class _gamePageState extends State<gamePage> {
     super.initState();
     generatewords();
     initBannerAd();
+    initRewardedAd();
   }
 
   void generatewords() {
@@ -51,7 +52,6 @@ class _gamePageState extends State<gamePage> {
 
   late BannerAd bannerAd;
   bool isAdLoaded = false;
-
   initBannerAd() async {
     bannerAd = BannerAd(
       size: AdSize.banner,
@@ -66,11 +66,33 @@ class _gamePageState extends State<gamePage> {
           ad.dispose();
           print(error);
         },
+        onAdOpened: (ad) => print("Ad opened"),
+        onAdClosed: (ad) => print("Ad closed"),
       ),
       request: const AdRequest(),
     );
-
     await bannerAd.load();
+  }
+
+  late RewardedAd rewardedAd;
+  bool isRewardLoaded = false;
+  initRewardedAd() async {
+    RewardedAd.load(
+      adUnitId: 'ca-app-pub-2108900822347101/7603059514',
+      request: const AdRequest(),
+      rewardedAdLoadCallback: RewardedAdLoadCallback(
+        onAdLoaded: (ad) {
+          setState(() {
+            isRewardLoaded = true;
+            rewardedAd = ad;
+          });
+        },
+        onAdFailedToLoad: (error) {
+          rewardedAd.dispose();
+          print(error);
+        },
+      ),
+    );
   }
 
   @override
@@ -110,9 +132,7 @@ class _gamePageState extends State<gamePage> {
                 Get.back(result: true);
               },
               icon: const Text("END"),
-              label: const Icon(
-                Icons.exit_to_app,
-              ),
+              label: const Icon(Icons.exit_to_app),
             ),
           ],
         );
@@ -124,12 +144,13 @@ class _gamePageState extends State<gamePage> {
               date: DateTime.now(),
             );
             await dbHelper.instance.create(score);
-            return Future.value(true);
+            Get.off(scorePage(wordCount));
+            return false;
           } else {
-            return Future.value(false);
+            return false;
           }
         } else {
-          return Future.value(false);
+          return false;
         }
       },
       child: Scaffold(
@@ -287,8 +308,9 @@ class _gamePageState extends State<gamePage> {
                               Get.defaultDialog(
                                 barrierDismissible: false,
                                 title: "THE MAN IS HANGED",
-                                content:
-                                    const Text("Are you sure to use life?"),
+                                content: Text(
+                                  "no. of LIVES remaining: $lives \n\n Are you sure to use live?",
+                                ),
                                 titlePadding:
                                     const EdgeInsets.fromLTRB(10, 20, 10, 10),
                                 contentPadding: const EdgeInsets.all(20),
@@ -336,30 +358,98 @@ class _gamePageState extends State<gamePage> {
                                           Get.back();
                                         });
                                       },
-                                      child: const Text(
-                                        "Yes",
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
                                       style: ElevatedButton.styleFrom(
                                         minimumSize: const Size(35, 30),
                                         backgroundColor: Colors.brown,
                                         foregroundColor: Colors.brown[900],
+                                      ),
+                                      child: const Text(
+                                        "Yes",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold),
                                       ),
                                     ),
                                   ),
                                 ],
                               );
                             } else {
-                              Get.off(scorePage(
-                                wordCount,
-                              ));
-                              final score = scoremodel(
-                                id: Random().nextInt(1000),
-                                score: wordCount,
-                                date: DateTime.now(),
+                              Get.defaultDialog(
+                                barrierDismissible: false,
+                                title: "THE MAN IS HANGED",
+                                content: Text(
+                                  "no. of LIVES remaining: $lives \n\n Get Extra Lives?",
+                                ),
+                                titlePadding:
+                                    const EdgeInsets.fromLTRB(10, 20, 10, 10),
+                                contentPadding: const EdgeInsets.all(20),
+                                backgroundColor: Colors.brown[400],
+                                radius: 20,
+                                actions: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                                    child: OutlinedButton(
+                                      onPressed: () async {
+                                        Get.back();
+                                        Get.off(scorePage(
+                                          wordCount,
+                                        ));
+                                        final score = scoremodel(
+                                          id: Random().nextInt(1000),
+                                          score: wordCount,
+                                          date: DateTime.now(),
+                                        );
+                                        await dbHelper.instance.create(score);
+                                      },
+                                      style: OutlinedButton.styleFrom(
+                                        minimumSize: const Size(20, 30),
+                                        foregroundColor: Colors.brown[900],
+                                        side: const BorderSide(
+                                          color: Colors.brown,
+                                        ),
+                                      ),
+                                      child: const Text(
+                                        "Cancel",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(8, 0, 0, 0),
+                                    child: ElevatedButton(
+                                      onPressed: () {
+                                        // Reward ads
+                                        if (isRewardLoaded) {
+                                          rewardedAd.show(
+                                            onUserEarnedReward: (ad, reward) {
+                                              setState(() {
+                                                lives = 5;
+                                                tries = 1;
+                                              });
+                                            },
+                                          );
+                                          initRewardedAd();
+                                        }
+                                        Get.back();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        minimumSize: const Size(35, 30),
+                                        backgroundColor: Colors.brown,
+                                        foregroundColor: Colors.brown[900],
+                                      ),
+                                      child: const Text(
+                                        "Yes",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               );
-                              await dbHelper.instance.create(score);
                             }
                           }
                         },

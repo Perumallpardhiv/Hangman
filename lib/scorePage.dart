@@ -31,9 +31,8 @@ class _scorePageState extends State<scorePage> {
       adLoadCallback: InterstitialAdLoadCallback(
         onAdLoaded: (ad) {
           interstitialAd = ad;
-          setState(() {
-            isAdLoaded = true;
-          });
+          isAdLoaded = true;
+          setState(() {});
         },
         onAdFailedToLoad: (e) {
           interstitialAd.dispose();
