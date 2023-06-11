@@ -39,6 +39,12 @@ dependencies:
   path: ^1.8.2
   confetti: ^0.7.0
   google_mobile_ads: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/appicon.png"
 
 dev_dependencies:
 

@@ -427,7 +427,7 @@ class _gamePageState extends State<gamePage> {
                                             onUserEarnedReward: (ad, reward) {
                                               setState(() {
                                                 lives = 5;
-                                                tries = 1;
+                                                tries = 0;
                                               });
                                             },
                                           );
